@@ -5,6 +5,7 @@ const searchResultsSlice = createSlice({
   initialState: {
     results: [],
     searchType: "tv",
+    popular: [],
   },
   reducers: {
     setSearchResults: (state, action) => {
@@ -13,9 +14,13 @@ const searchResultsSlice = createSlice({
     setSearchType: (state, action) => {
       state.searchType = action.payload;
     },
+    setPopular: (state, action) => {
+      state.popular = action.payload;
+    },
   },
 });
 
-export const { setSearchResults, setSearchType } = searchResultsSlice.actions;
+export const { setSearchResults, setSearchType, setPopular } =
+  searchResultsSlice.actions;
 
 export default searchResultsSlice.reducer;

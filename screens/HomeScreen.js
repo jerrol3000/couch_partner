@@ -15,6 +15,7 @@ import axios from "axios";
 import {
   setSearchResults,
   setSearchType,
+  setPopular,
 } from "../store/reducers/slice/searchResultsSlice";
 
 const API_KEY = "f00232dfb1ce381afc3c65971e0fd1aa";
@@ -26,7 +27,7 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { results, searchType } = useSelector((state) => state.media);
+  const { results, searchType, popular } = useSelector((state) => state.media);
 
   const dispatch = useDispatch();
 
@@ -55,6 +56,31 @@ const HomeScreen = () => {
       dispatch(setSearchResults([])); // Clear search results if the search query is empty
     }
   }, [searchQuery, searchType]);
+
+  useEffect(() => {
+    const fetchPopularMedia = async () => {
+      try {
+        const response = await axios.get(
+          `https://api.themoviedb.org/3/discover/${searchType}`,
+          {
+            params: {
+              api_key: API_KEY,
+              language: "en-US",
+              include_adult: false,
+              include_null_first_air_dates: false,
+              page: 1,
+              sort_by: "popularity.desc",
+            },
+          }
+        );
+        dispatch(setPopular(response.data.results));
+      } catch (error) {
+        console.error(`Error fetching ${searchType} results:`, error);
+      }
+    };
+
+    fetchPopularMedia();
+  }, [searchType]);
 
   const renderMediaItem = ({ item }) => (
     <TouchableOpacity
@@ -112,7 +138,7 @@ const HomeScreen = () => {
         </View>
       </View>
       <FlatList
-        data={results}
+        data={searchQuery.trim() !== "" ? results : popular}
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
         renderItem={renderMediaItem}
