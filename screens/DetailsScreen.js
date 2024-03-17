@@ -66,6 +66,14 @@ const DetailsScreen = ({ route, navigation }) => {
     return numArray.join("");
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Image
@@ -77,7 +85,7 @@ const DetailsScreen = ({ route, navigation }) => {
 
       <Text style={styles.detail}>
         Genre:{" "}
-        {details.genres.length ? (
+        {details && details.genres && details.genres.length ? (
           details.genres.map((genre) => genre.name).join(", ")
         ) : (
           <Text>Unclassified</Text>
@@ -118,7 +126,7 @@ const DetailsScreen = ({ route, navigation }) => {
                           ? require("../assets/default_female_profile.jpeg")
                           : require("../assets/default_male_display.jpeg")
                       }
-                      style={styles.defaultActorImage}
+                      style={styles.actorImage}
                       resizeMode="cover"
                     />
                   )}
@@ -220,23 +228,25 @@ const DetailsScreen = ({ route, navigation }) => {
           </>
         )
       )}
-      <View style={styles.additionalDetails}>
-        <Text style={styles.detail}>
-          First Air Date: {details.first_air_date}
-        </Text>
-        <Text style={styles.detail}>
-          Last Air Date: {details.last_air_date}
-        </Text>
-        <Text style={styles.detail}>
-          Number of Seasons: {details.number_of_seasons}
-        </Text>
-        <Text style={styles.detail}>
-          Number of Episodes: {details.number_of_episodes}
-        </Text>
-        <Text style={styles.detail}>Status: {details.status}</Text>
-        <Text style={styles.detail}>Tagline: {details.tagline}</Text>
-        <Text style={styles.detail}>Homepage: {details.homepage}</Text>
-      </View>
+      {details && searchType === "tv" && (
+        <View style={styles.additionalDetails}>
+          <Text style={styles.detail}>
+            First Air Date: {details.first_air_date}
+          </Text>
+          <Text style={styles.detail}>
+            Last Air Date: {details.last_air_date}
+          </Text>
+          <Text style={styles.detail}>
+            Number of Seasons: {details.number_of_seasons}
+          </Text>
+          <Text style={styles.detail}>
+            Number of Episodes: {details.number_of_episodes}
+          </Text>
+          <Text style={styles.detail}>Status: {details.status}</Text>
+          <Text style={styles.detail}>Tagline: {details.tagline}</Text>
+          <Text style={styles.detail}>Homepage: {details.homepage}</Text>
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -305,11 +315,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   actorImage: {
-    width: 80,
-    height: 120,
-    borderRadius: 10,
-  },
-  defaultActorImage: {
     width: 80,
     height: 120,
     borderRadius: 10,

@@ -1,12 +1,11 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { useSelector } from "react-redux";
+import MediaListScreen from "./MediaListScreen";
 
-const FavoritesScreen = () => {
-  return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Favorites Screen</Text>
-    </View>
-  );
+const FavoriteScreen = () => {
+  const { favorite } = useSelector((state) => state.favoriteList);
+
+  return <MediaListScreen mediaList={favorite} listType="favorite" />;
 };
 
-export default FavoritesScreen;
+export default FavoriteScreen;

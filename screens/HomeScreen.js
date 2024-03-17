@@ -7,8 +7,6 @@ import {
   FlatList,
   Image,
   TextInput,
-  StyleSheet,
-  Dimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
@@ -17,18 +15,20 @@ import {
   setSearchType,
   setPopular,
 } from "../store/reducers/slice/searchResultsSlice";
+import MediaMenu from "./MediaMenu";
+import styles from "../styles/generalStyle";
+import { setOpenMenuId } from "../store/reducers/slice/mediaMenuSlice";
+import AnimatedCheckMark from "./AnimatedCheckMark";
 
 const API_KEY = "f00232dfb1ce381afc3c65971e0fd1aa";
-
-const { width } = Dimensions.get("window");
-const ITEM_WIDTH = width / 2 - 20; // Subtract margins
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState("");
-
   const { results, searchType, popular } = useSelector((state) => state.media);
-
+  const { openMenuId, showCheckMark } = useSelector(
+    (state) => state.openMenuId
+  );
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -78,9 +78,16 @@ const HomeScreen = () => {
         console.error(`Error fetching ${searchType} results:`, error);
       }
     };
-
     fetchPopularMedia();
   }, [searchType]);
+
+  const handleToggleMenu = (itemId) => {
+    if (openMenuId === itemId) {
+      dispatch(setOpenMenuId(null));
+    } else {
+      dispatch(setOpenMenuId(itemId));
+    }
+  };
 
   const renderMediaItem = ({ item }) => (
     <TouchableOpacity
@@ -93,11 +100,27 @@ const HomeScreen = () => {
         resizeMode="cover"
       />
       <Text style={styles.mediaTitle}>{item.title || item.name}</Text>
+      {openMenuId !== item.id && (
+        <TouchableOpacity
+          style={styles.menuIcon}
+          onPress={() => handleToggleMenu(item.id)}
+        >
+          <Text style={styles.menuText}>☰</Text>
+        </TouchableOpacity>
+      )}
+      {openMenuId === item.id && (
+        <MediaMenu
+          onClose={() => dispatch(setOpenMenuId(null))}
+          item={item}
+          id={openMenuId}
+        />
+      )}
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}></View>
       <View style={styles.searchBar}>
         <TextInput
           style={styles.searchInput}
@@ -143,66 +166,9 @@ const HomeScreen = () => {
         numColumns={2}
         renderItem={renderMediaItem}
       />
+      {showCheckMark && <AnimatedCheckMark isVisible={showCheckMark} />}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  searchBar: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
-  searchInput: {
-    marginBottom: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-  },
-  tabBar: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  tabButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  tabButtonText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  activeTab: {
-    backgroundColor: "#007bff",
-  },
-  activeTabText: {
-    color: "#fff",
-  },
-  mediaTile: {
-    width: ITEM_WIDTH,
-    marginBottom: 20,
-    borderRadius: 10,
-    backgroundColor: "#f0f0f0",
-    padding: 10,
-    marginRight: 10,
-  },
-  mediaPoster: {
-    width: "100%",
-    height: 150,
-    borderRadius: 5,
-  },
-  mediaTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginTop: 5,
-  },
-});
 
 export default HomeScreen;
