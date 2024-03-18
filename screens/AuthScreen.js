@@ -36,6 +36,7 @@ const AuthScreen = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
+  const [backgroundLoaded, setBackgroundLoaded] = useState(false);
 
   useEffect(() => {
     const subscribe = FIREBASE_AUTH.onAuthStateChanged((user) => {
@@ -115,7 +116,9 @@ const AuthScreen = () => {
     <ImageBackground
       source={require("../assets/login-wallpaper.jpeg")}
       style={styles.backgroundImage}
+      onLoad={() => setBackgroundLoaded(true)}
     >
+      {!backgroundLoaded && <ActivityIndicator style={styles.loader} />}
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
@@ -129,6 +132,7 @@ const AuthScreen = () => {
             <TextInput
               style={styles.input}
               placeholder="Email"
+              textContentType="oneTimeCode" //eliminate the flickering
               keyboardType="email-address"
               autoCapitalize="none"
               value={email}
@@ -137,6 +141,7 @@ const AuthScreen = () => {
             <TextInput
               style={styles.input}
               placeholder="Password"
+              textContentType="oneTimeCode" //eliminate the flickering
               secureTextEntry={true}
               value={password}
               onChangeText={(text) => setPassword(text)}
