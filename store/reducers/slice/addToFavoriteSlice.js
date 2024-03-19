@@ -1,5 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { addDoc, collection, deleteDoc, doc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { FIREBASE_DB } from "../../../firebaseConfig";
 
 // Async Thunk to add a document to Firestore
@@ -23,10 +29,13 @@ export const removeFromFirestore = createAsyncThunk(
   "favorite/removeFromFirestore",
   async (id, thunkAPI) => {
     try {
+      console.log("hit id: ", id);
       const removed = await deleteDoc(doc(FIREBASE_DB, "favorites", id));
+
       console.log("this item was removed: ", removed);
       return id;
     } catch (error) {
+      console.error("Error removing document: ", error);
       throw error;
     }
   }

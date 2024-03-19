@@ -29,6 +29,7 @@ const HomeScreen = () => {
   const { openMenuId, showCheckMark } = useSelector(
     (state) => state.openMenuId
   );
+
   const dispatch = useDispatch();
 
   useEffect(() => {

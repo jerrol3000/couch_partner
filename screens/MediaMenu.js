@@ -77,7 +77,7 @@ const MediaMenu = ({ onClose, item, id }) => {
 
   const handleRemoveFromFavorites = () => {
     dispatch(removeFromFavorite(item.id));
-    dispatch(removeFromFirestore(id))
+    dispatch(removeFromFirestore(item.id))
       .then(() => {
         onClose();
       })
