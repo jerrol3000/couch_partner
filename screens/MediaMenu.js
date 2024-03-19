@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Icon } from "react-native-elements";
 
 import {
-  setFavorite,
+  addToFavorite,
   removeFromFavorite,
 } from "../store/reducers/slice/addToFavoriteSlice";
 import {
@@ -12,6 +12,10 @@ import {
   removeFromWatchList,
 } from "../store/reducers/slice/addToWatchSlice";
 import { setShowCheckMark } from "../store/reducers/slice/mediaMenuSlice";
+import {
+  addToFirestore,
+  removeFromFirestore,
+} from "../store/reducers/slice/addToFavoriteSlice";
 
 const MediaMenu = ({ onClose, item, id }) => {
   const dispatch = useDispatch();
@@ -28,11 +32,19 @@ const MediaMenu = ({ onClose, item, id }) => {
         `${item.title || item.name} is already in your favorites list.`
       );
     } else {
-      dispatch(setFavorite(item));
+      dispatch(addToFavorite(item));
       dispatch(setShowCheckMark(true));
-      setTimeout(() => {
-        dispatch(setShowCheckMark(false));
-      }, 1000);
+      dispatch(addToFirestore(item))
+        .then(() => {
+          setTimeout(() => {
+            dispatch(setShowCheckMark(false));
+            onClose();
+          }, 1000);
+        })
+        .catch((error) => {
+          console.error("Error adding to Firestore:", error);
+          // Handle error
+        });
     }
     onClose();
   };
@@ -48,21 +60,43 @@ const MediaMenu = ({ onClose, item, id }) => {
     } else {
       dispatch(addToWatchlist(item));
       dispatch(setShowCheckMark(true));
-      setTimeout(() => {
-        dispatch(setShowCheckMark(false));
-        onClose();
-      }, 1000);
+      dispatch(addToFirestore(item))
+        .then(() => {
+          setTimeout(() => {
+            dispatch(setShowCheckMark(false));
+            onClose();
+          }, 1000);
+        })
+        .catch((error) => {
+          console.error("Error adding to Firestore:", error);
+          // Handle error
+        });
     }
     onClose();
   };
 
   const handleRemoveFromFavorites = () => {
-    dispatch(removeFromFavorite(item.id, id));
-    onClose();
+    dispatch(removeFromFavorite(item.id));
+    dispatch(removeFromFirestore(id))
+      .then(() => {
+        onClose();
+      })
+      .catch((error) => {
+        console.error("Error removing from Firestore:", error);
+        // Handle error
+      });
   };
 
   const handleRemoveFromWatchList = () => {
-    dispatch(removeFromWatchList(item.id, id));
+    dispatch(removeFromWatchList(item.id));
+    dispatch(removeFromFirestore(id))
+      .then(() => {
+        onClose();
+      })
+      .catch((error) => {
+        console.error("Error removing from Firestore:", error);
+        // Handle error
+      });
   };
 
   const handleClose = () => {

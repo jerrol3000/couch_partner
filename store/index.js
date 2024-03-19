@@ -6,6 +6,7 @@ import addToWatchSlice from "./reducers/slice/addToWatchSlice";
 import mediaMenuSlice from "./reducers/slice/mediaMenuSlice";
 import screensSlice from "./reducers/slice/screensSlice";
 import authSlice from "./reducers/slice/authSlice";
+import { addToFirestore } from "./reducers/slice/addToFavoriteSlice";
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     watchList: addToWatchSlice,
     openMenuId: mediaMenuSlice,
     screens: screensSlice,
+    firestore: addToFirestore,
     user: authSlice,
   },
 });
