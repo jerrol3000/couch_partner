@@ -4,10 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Icon } from "react-native-elements";
 
 import {
-  addToFavorite,
-  removeFromFavorite,
-} from "../store/reducers/slice/addToFavoriteSlice";
-import {
   addToWatchlist,
   removeFromWatchList,
 } from "../store/reducers/slice/addToWatchSlice";
@@ -32,7 +28,6 @@ const MediaMenu = ({ onClose, item, id }) => {
         `${item.title || item.name} is already in your favorites list.`
       );
     } else {
-      dispatch(addToFavorite(item));
       dispatch(setShowCheckMark(true));
       dispatch(addToFirestore(item))
         .then(() => {
@@ -76,15 +71,18 @@ const MediaMenu = ({ onClose, item, id }) => {
   };
 
   const handleRemoveFromFavorites = () => {
-    dispatch(removeFromFavorite(item.id));
-    dispatch(removeFromFirestore(id))
-      .then(() => {
-        onClose();
-      })
-      .catch((error) => {
-        console.error("Error removing from Firestore:", error);
-        // Handle error
-      });
+    const currentItem = favorite.find((favItem) => favItem.data.id === id);
+    if (currentItem) {
+      dispatch(removeFromFirestore(currentItem.entryId))
+        .then(() => {
+          onClose();
+        })
+        .catch((error) => {
+          console.error("Error removing from Firestore:", error);
+        });
+    } else {
+      console.log("Item not found in the favorite list.");
+    }
   };
 
   const handleRemoveFromWatchList = () => {

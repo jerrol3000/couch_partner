@@ -1,17 +1,24 @@
+/* eslint-disable no-useless-catch */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { addDoc, collection, deleteDoc, doc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+} from "firebase/firestore";
 import { FIREBASE_DB } from "../../../firebaseConfig";
 
-// Async Thunk to add a document to Firestore
 export const addToFirestore = createAsyncThunk(
   "favorite/addToFirestore",
-  async (payload, thunkAPI) => {
+  async (payload) => {
+    // eslint-disable-next-line no-useless-catch
     try {
       const docRef = await addDoc(
         collection(FIREBASE_DB, "favorites"),
         payload
       );
-      return docRef.id;
+      return { entryId: docRef.id, data: payload };
     } catch (error) {
       throw error;
     }
@@ -21,10 +28,14 @@ export const addToFirestore = createAsyncThunk(
 // Async Thunk to remove a document from Firestore
 export const removeFromFirestore = createAsyncThunk(
   "favorite/removeFromFirestore",
-  async (id, thunkAPI) => {
+  async (id) => {
     try {
-      const removed = await deleteDoc(doc(FIREBASE_DB, "favorites", id));
-      console.log("this item was removed: ", removed);
+      const favorites = await getDocs(collection(FIREBASE_DB, "favorites"));
+      for (let favorite of favorites.docs) {
+        if (favorite.id === id) {
+          await deleteDoc(doc(FIREBASE_DB, "favorites", id));
+        }
+      }
       return id;
     } catch (error) {
       throw error;
@@ -36,21 +47,10 @@ const addToFavoriteSlice = createSlice({
   name: "favorite",
   initialState: {
     favorite: [],
-    status: "idle", // 'idle', 'loading', 'succeeded', 'failed'
+    status: "idle",
     error: null,
   },
-  reducers: {
-    // Reducer for handling local state update when adding to favorite
-    addToFavorite: (state, action) => {
-      state.favorite.push(action.payload);
-    },
-    // Reducer for handling local state update when removing from favorite
-    removeFromFavorite: (state, action) => {
-      state.favorite = state.favorite.filter(
-        (item) => item.id !== action.payload
-      );
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     // Add async thunk reducers
     builder.addCase(addToFirestore.pending, (state, action) => {
@@ -58,6 +58,7 @@ const addToFavoriteSlice = createSlice({
     });
     builder.addCase(addToFirestore.fulfilled, (state, action) => {
       state.status = "succeeded";
+      state.favorite.push(action.payload);
     });
     builder.addCase(addToFirestore.rejected, (state, action) => {
       state.status = "failed";
@@ -68,6 +69,9 @@ const addToFavoriteSlice = createSlice({
     });
     builder.addCase(removeFromFirestore.fulfilled, (state, action) => {
       state.status = "succeeded";
+      state.favorite = state.favorite.filter(
+        (item) => item.id !== action.payload
+      );
     });
     builder.addCase(removeFromFirestore.rejected, (state, action) => {
       state.status = "failed";
@@ -76,5 +80,4 @@ const addToFavoriteSlice = createSlice({
   },
 });
 
-export const { addToFavorite, removeFromFavorite } = addToFavoriteSlice.actions;
 export default addToFavoriteSlice.reducer;

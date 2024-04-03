@@ -5,7 +5,9 @@ import MediaListScreen from "./MediaListScreen";
 const FavoriteScreen = () => {
   const { favorite } = useSelector((state) => state.favoriteList);
 
-  return <MediaListScreen mediaList={favorite} listType="favorite" />;
+  const favoriteData = favorite.map((item) => item.data);
+
+  return <MediaListScreen mediaList={favoriteData} listType="favorite" />;
 };
 
 export default FavoriteScreen;

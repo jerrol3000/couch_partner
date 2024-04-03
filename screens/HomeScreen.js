@@ -29,8 +29,10 @@ const HomeScreen = () => {
   const { openMenuId, showCheckMark } = useSelector(
     (state) => state.openMenuId
   );
+
   const dispatch = useDispatch();
 
+  //move to a slice
   useEffect(() => {
     const fetchSearchResults = async () => {
       try {
@@ -53,7 +55,7 @@ const HomeScreen = () => {
     if (searchQuery.trim() !== "") {
       fetchSearchResults();
     } else {
-      dispatch(setSearchResults([])); // Clear search results if the search query is empty
+      dispatch(setSearchResults([]));
     }
   }, [searchQuery, searchType]);
 
