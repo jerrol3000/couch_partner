@@ -12,18 +12,19 @@ import WatchListScreen from "./screens/WatchListScreen";
 import NavigationBar from "./screens/NavigationBar";
 import AuthScreen from "./screens/AuthScreen";
 import { setCurrentScreen } from "./store/reducers/slice/screensSlice";
-import { User, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { FIREBASE_AUTH } from "./firebaseConfig";
 
 const Stack = createStackNavigator();
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(User || null);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   useEffect(() => {
-    onAuthStateChanged(FIREBASE_AUTH, (user) => {
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
       setIsAuthenticated(user);
     });
+    return unsubscribe;
   }, []);
 
   const handleScreenChange = (newState) => {

@@ -6,17 +6,21 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  query,
+  where,
 } from "firebase/firestore";
-import { FIREBASE_DB } from "../../../firebaseConfig";
+import { FIREBASE_DB, FIREBASE_AUTH } from "../../../firebaseConfig";
 
 export const addToFirestore = createAsyncThunk(
   "favorite/addToFirestore",
   async (payload) => {
     // eslint-disable-next-line no-useless-catch
     try {
+      const userData = { ...payload, userId: FIREBASE_AUTH.currentUser.uid };
+
       const docRef = await addDoc(
         collection(FIREBASE_DB, "favorites"),
-        payload
+        userData
       );
       return { entryId: docRef.id, data: payload };
     } catch (error) {
@@ -25,7 +29,27 @@ export const addToFirestore = createAsyncThunk(
   }
 );
 
-// Async Thunk to remove a document from Firestore
+export const getFavoriteFromFireStore = createAsyncThunk(
+  "favorite/getFavoriteFromFireStore",
+  async () => {
+    try {
+      const userId = FIREBASE_AUTH.currentUser.uid;
+      const favoritesQuery = query(
+        collection(FIREBASE_DB, "favorites"),
+        where("userId", "==", userId)
+      );
+      const favoritesSnapshot = await getDocs(favoritesQuery);
+      const favorites = favoritesSnapshot.docs.map((doc) => ({
+        entryId: doc.id,
+        data: doc.data(),
+      }));
+      return favorites;
+    } catch (error) {
+      throw error;
+    }
+  }
+);
+
 export const removeFromFirestore = createAsyncThunk(
   "favorite/removeFromFirestore",
   async (id) => {
@@ -70,7 +94,7 @@ const addToFavoriteSlice = createSlice({
     builder.addCase(removeFromFirestore.fulfilled, (state, action) => {
       state.status = "succeeded";
       state.favorite = state.favorite.filter(
-        (item) => item.id !== action.payload
+        (item) => item.entryId !== action.payload
       );
     });
     builder.addCase(removeFromFirestore.rejected, (state, action) => {

@@ -43,7 +43,6 @@ const MediaMenu = ({ onClose, item, id }) => {
     }
     onClose();
   };
-
   const handleAddToWatchlist = () => {
     const alreadyAdded = watchList.findIndex((item) => item.id === id);
     if (alreadyAdded !== -1) {
@@ -75,6 +74,7 @@ const MediaMenu = ({ onClose, item, id }) => {
     if (currentItem) {
       dispatch(removeFromFirestore(currentItem.entryId))
         .then(() => {
+          // dispatch(removeFromFavorite(currentItem.entryId));
           onClose();
         })
         .catch((error) => {
