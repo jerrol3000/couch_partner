@@ -14,7 +14,6 @@ import { FIREBASE_DB, FIREBASE_AUTH } from "../../../firebaseConfig";
 export const addToFirestore = createAsyncThunk(
   "favorite/addToFirestore",
   async (payload) => {
-    // eslint-disable-next-line no-useless-catch
     try {
       const userData = { ...payload, userId: FIREBASE_AUTH.currentUser.uid };
 

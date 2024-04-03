@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Icon } from "react-native-elements";
+import { getFavoriteFromFireStore } from "../store/reducers/slice/addToFavoriteSlice";
 
 import {
   addToWatchlist,
@@ -69,12 +70,16 @@ const MediaMenu = ({ onClose, item, id }) => {
     onClose();
   };
 
-  const handleRemoveFromFavorites = () => {
-    const currentItem = favorite.find((favItem) => favItem.data.id === id);
+  const handleRemoveFromFavorites = async () => {
+    //get current favorite from firestore
+    const favoritesSnapshot = await dispatch(getFavoriteFromFireStore());
+
+    const currentItem = favoritesSnapshot.payload.find(
+      (favItem) => favItem.data.id === id
+    );
     if (currentItem) {
       dispatch(removeFromFirestore(currentItem.entryId))
         .then(() => {
-          // dispatch(removeFromFavorite(currentItem.entryId));
           onClose();
         })
         .catch((error) => {
