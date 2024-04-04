@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+/* eslint-disable no-unused-vars */
+import React, { useEffect, useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -7,14 +8,17 @@ import {
   Dimensions,
   Alert,
 } from "react-native";
+import { useDispatch } from "react-redux";
 import { Icon } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
 import { FIREBASE_AUTH } from "../firebaseConfig";
 
 const SettingsMenu = () => {
+  const dispatch = useDispatch();
   const navigation = useNavigation();
   const [showMenu, setShowMenu] = useState(false);
+
   const toggleMenu = () => {
     setShowMenu(!showMenu);
   };

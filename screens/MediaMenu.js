@@ -2,26 +2,22 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Icon } from "react-native-elements";
-import { getFavoriteFromFireStore } from "../store/reducers/slice/addToFavoriteSlice";
-
 import {
-  addToWatchlist,
-  removeFromWatchList,
-} from "../store/reducers/slice/addToWatchSlice";
+  addItemToFirestore,
+  getListFromFirestore,
+  removeItemFromFirestore,
+} from "../store/reducers/slice/mediaSlice";
 import { setShowCheckMark } from "../store/reducers/slice/mediaMenuSlice";
-import {
-  addToFirestore,
-  removeFromFirestore,
-} from "../store/reducers/slice/addToFavoriteSlice";
 
 const MediaMenu = ({ onClose, item, id }) => {
   const dispatch = useDispatch();
   const currentScreen = useSelector((state) => state.screens.currentScreen);
-  const { favorite } = useSelector((state) => state.favoriteList);
-  const { watchList } = useSelector((state) => state.watchList);
+  const { favoriteList, watchList } = useSelector((state) => state.firestore);
 
   const handleAddToFavorites = () => {
-    const alreadyAdded = favorite.findIndex((item) => item.id === id);
+    const alreadyAdded = favoriteList.findIndex(
+      (favItem) => favItem.data.id === id
+    );
     if (alreadyAdded !== -1) {
       dispatch(setShowCheckMark(false));
       Alert.alert(
@@ -30,7 +26,9 @@ const MediaMenu = ({ onClose, item, id }) => {
       );
     } else {
       dispatch(setShowCheckMark(true));
-      dispatch(addToFirestore(item))
+      dispatch(
+        addItemToFirestore({ collectionName: "favorites", payload: item })
+      )
         .then(() => {
           setTimeout(() => {
             dispatch(setShowCheckMark(false));
@@ -44,8 +42,11 @@ const MediaMenu = ({ onClose, item, id }) => {
     }
     onClose();
   };
+
   const handleAddToWatchlist = () => {
-    const alreadyAdded = watchList.findIndex((item) => item.id === id);
+    const alreadyAdded = watchList.findIndex(
+      (watchItem) => watchItem.data.id === id
+    );
     if (alreadyAdded !== -1) {
       dispatch(setShowCheckMark(false));
       Alert.alert(
@@ -53,9 +54,10 @@ const MediaMenu = ({ onClose, item, id }) => {
         `${item.title || item.name} is already in your watch list.`
       );
     } else {
-      dispatch(addToWatchlist(item));
       dispatch(setShowCheckMark(true));
-      dispatch(addToFirestore(item))
+      dispatch(
+        addItemToFirestore({ collectionName: "watchlist", payload: item })
+      )
         .then(() => {
           setTimeout(() => {
             dispatch(setShowCheckMark(false));
@@ -71,14 +73,18 @@ const MediaMenu = ({ onClose, item, id }) => {
   };
 
   const handleRemoveFromFavorites = async () => {
-    //get current favorite from firestore
-    const favoritesSnapshot = await dispatch(getFavoriteFromFireStore());
+    const favoritesList = await dispatch(getListFromFirestore("favorites"));
 
-    const currentItem = favoritesSnapshot.payload.find(
-      (favItem) => favItem.data.id === id
+    const currentItem = favoritesList.payload.find(
+      (item) => item.data.id === id
     );
     if (currentItem) {
-      dispatch(removeFromFirestore(currentItem.entryId))
+      dispatch(
+        removeItemFromFirestore({
+          collectionName: "favorites",
+          id: currentItem.entryId,
+        })
+      )
         .then(() => {
           onClose();
         })
@@ -90,16 +96,25 @@ const MediaMenu = ({ onClose, item, id }) => {
     }
   };
 
-  const handleRemoveFromWatchList = () => {
-    dispatch(removeFromWatchList(item.id));
-    dispatch(removeFromFirestore(id))
-      .then(() => {
-        onClose();
-      })
-      .catch((error) => {
-        console.error("Error removing from Firestore:", error);
-        // Handle error
-      });
+  const handleRemoveFromWatchList = async () => {
+    const watchList = await dispatch(getListFromFirestore("watchlist"));
+    const currentItem = watchList.payload.find((item) => item.data.id === id);
+    if (currentItem) {
+      dispatch(
+        removeItemFromFirestore({
+          collectionName: "watchlist",
+          id: currentItem.entryId,
+        })
+      )
+        .then(() => {
+          onClose();
+        })
+        .catch((error) => {
+          console.error("Error removing from Firestore:", error);
+        });
+    } else {
+      console.log("Item not found in the watchlist list.");
+    }
   };
 
   const handleClose = () => {

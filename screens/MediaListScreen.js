@@ -10,6 +10,7 @@ const MediaListScreen = ({ mediaList, listType }) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const { openMenuId } = useSelector((state) => state.openMenuId);
+  const { status } = useSelector((state) => state.firestore);
 
   const handleToggleMenu = (itemId) => {
     if (openMenuId === itemId) {
