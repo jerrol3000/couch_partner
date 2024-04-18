@@ -20,6 +20,7 @@ export const addItemToFirestore = createAsyncThunk(
         collection(FIREBASE_DB, collectionName),
         userData
       );
+      console.log("Document written with ID: ", docRef.id);
       return { entryId: docRef.id, data: payload };
     } catch (error) {
       throw error;
@@ -68,7 +69,23 @@ const mediaSlice = createSlice({
     status: "idle",
     error: null,
   },
-  reducers: {},
+  reducers: {
+    addItemToList: (state, action) => {
+      state.favoriteList.push(action.payload);
+    },
+    removefromList: (state, action) => {
+      const { id, collectionName } = action.payload;
+      if (collectionName === "watchlist") {
+        state.watchList = state.watchList.filter(
+          (entry) => entry.data.id !== id
+        );
+      } else {
+        state.favoriteList = state.favoriteList.filter(
+          (entry) => entry.data.id !== id
+        );
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(getListFromFirestore.pending, (state, action) => {
       state.status = "loading";
@@ -121,5 +138,7 @@ const mediaSlice = createSlice({
     });
   },
 });
+
+export const { removefromList } = mediaSlice.actions;
 
 export default mediaSlice.reducer;

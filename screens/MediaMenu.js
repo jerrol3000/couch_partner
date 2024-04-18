@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Icon } from "react-native-elements";
@@ -6,144 +6,104 @@ import {
   addItemToFirestore,
   getListFromFirestore,
   removeItemFromFirestore,
+  removefromList,
 } from "../store/reducers/slice/mediaSlice";
 import { setShowCheckMark } from "../store/reducers/slice/mediaMenuSlice";
 
 const MediaMenu = ({ onClose, item, id }) => {
   const dispatch = useDispatch();
   const currentScreen = useSelector((state) => state.screens.currentScreen);
-  const { favoriteList, watchList } = useSelector((state) => state.firestore);
+  const favoriteList = useSelector((state) => state.firestore.favoriteList);
+  const watchList = useSelector((state) => state.firestore.watchList);
 
-  const handleAddToFavorites = () => {
-    const alreadyAdded = favoriteList.findIndex(
-      (favItem) => favItem.data.id === id
-    );
-    if (alreadyAdded !== -1) {
-      dispatch(setShowCheckMark(false));
-      Alert.alert(
-        "Fail to add",
-        `${item.title || item.name} is already in your favorites list.`
-      );
-    } else {
-      dispatch(setShowCheckMark(true));
-      dispatch(
-        addItemToFirestore({ collectionName: "favorites", payload: item })
-      )
-        .then(() => {
-          setTimeout(() => {
-            dispatch(setShowCheckMark(false));
-            onClose();
-          }, 1000);
-        })
-        .catch((error) => {
-          console.error("Error adding to Firestore:", error);
-          // Handle error
-        });
-    }
+  useEffect(() => {
+    dispatch(getListFromFirestore("favorites"));
+    dispatch(getListFromFirestore("watchlist"));
+  }, []);
+
+  const handleAddToCollection = useCallback(
+    (collectionName) => {
+      const list = collectionName === "favorites" ? favoriteList : watchList;
+      const alreadyAdded = list.find((listItem) => listItem.data.id === id);
+      if (alreadyAdded) {
+        dispatch(setShowCheckMark(false));
+        onClose();
+        Alert.alert(
+          "Fail to add",
+          `${
+            item.title || item.name
+          } is already in your ${collectionName} list.`
+        );
+      } else {
+        dispatch(setShowCheckMark(true));
+        dispatch(addItemToFirestore({ collectionName, payload: item }))
+          .then(() => {
+            setTimeout(() => {
+              dispatch(setShowCheckMark(false));
+              onClose();
+            }, 1000);
+          })
+          .catch((error) => {
+            console.error("Error adding to Firestore:", error);
+            // Handle error
+          });
+      }
+    },
+    [dispatch, favoriteList, watchList, id, item, onClose]
+  );
+
+  const handleRemoveFromCollection = useCallback(
+    (collectionName) => {
+      const list = collectionName === "favorites" ? favoriteList : watchList;
+      const currentItem = list.find((listItem) => listItem.data.id === id);
+      if (currentItem) {
+        dispatch(
+          removefromList(
+            id,
+            collectionName === "favorites" ? "favorites" : "watchlist"
+          )
+        );
+        dispatch(
+          removeItemFromFirestore({
+            collectionName,
+            id: currentItem.entryId,
+          })
+        );
+      } else {
+        console.log(`Item not found in the ${collectionName} list.`);
+      }
+      onClose();
+    },
+    [dispatch, favoriteList, watchList, id, onClose]
+  );
+
+  const handleClose = useCallback(() => {
     onClose();
-  };
-
-  const handleAddToWatchlist = () => {
-    const alreadyAdded = watchList.findIndex(
-      (watchItem) => watchItem.data.id === id
-    );
-    if (alreadyAdded !== -1) {
-      dispatch(setShowCheckMark(false));
-      Alert.alert(
-        "Fail to add",
-        `${item.title || item.name} is already in your watch list.`
-      );
-    } else {
-      dispatch(setShowCheckMark(true));
-      dispatch(
-        addItemToFirestore({ collectionName: "watchlist", payload: item })
-      )
-        .then(() => {
-          setTimeout(() => {
-            dispatch(setShowCheckMark(false));
-            onClose();
-          }, 1000);
-        })
-        .catch((error) => {
-          console.error("Error adding to Firestore:", error);
-          // Handle error
-        });
-    }
-    onClose();
-  };
-
-  const handleRemoveFromFavorites = async () => {
-    const favoritesList = await dispatch(getListFromFirestore("favorites"));
-
-    const currentItem = favoritesList.payload.find(
-      (item) => item.data.id === id
-    );
-    if (currentItem) {
-      dispatch(
-        removeItemFromFirestore({
-          collectionName: "favorites",
-          id: currentItem.entryId,
-        })
-      )
-        .then(() => {
-          onClose();
-        })
-        .catch((error) => {
-          console.error("Error removing from Firestore:", error);
-        });
-    } else {
-      console.log("Item not found in the favorite list.");
-    }
-  };
-
-  const handleRemoveFromWatchList = async () => {
-    const watchList = await dispatch(getListFromFirestore("watchlist"));
-    const currentItem = watchList.payload.find((item) => item.data.id === id);
-    if (currentItem) {
-      dispatch(
-        removeItemFromFirestore({
-          collectionName: "watchlist",
-          id: currentItem.entryId,
-        })
-      )
-        .then(() => {
-          onClose();
-        })
-        .catch((error) => {
-          console.error("Error removing from Firestore:", error);
-        });
-    } else {
-      console.log("Item not found in the watchlist list.");
-    }
-  };
-
-  const handleClose = () => {
-    onClose();
-  };
+  }, [onClose]);
 
   return (
     <View style={[styles.container, { zIndex: 1 }]}>
       <MenuItem
         title="Add to Favorites"
-        onPress={handleAddToFavorites}
+        onPress={() => handleAddToCollection("favorites")}
         icon="favorite"
         visible={currentScreen !== "Favorites"}
       />
       <MenuItem
         title="Add to Watch list"
-        onPress={handleAddToWatchlist}
+        onPress={() => handleAddToCollection("watchlist")}
         icon="watch-later"
         visible={currentScreen !== "WatchList"}
       />
       <MenuItem
         title="Remove from watch list"
-        onPress={handleRemoveFromWatchList}
+        onPress={() => handleRemoveFromCollection("watchlist")}
         icon="remove-circle"
         visible={currentScreen === "WatchList"}
       />
       <MenuItem
         title="Remove from favorites"
-        onPress={handleRemoveFromFavorites}
+        onPress={() => handleRemoveFromCollection("favorites")}
         icon="favorite-border"
         visible={currentScreen === "Favorites"}
       />

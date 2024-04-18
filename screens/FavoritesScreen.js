@@ -4,23 +4,16 @@ import MediaListScreen from "./MediaListScreen";
 import { getListFromFirestore } from "../store/reducers/slice/mediaSlice";
 
 const FavoriteScreen = () => {
-  const [favoriteData, setFavoriteData] = useState([]);
   const dispatch = useDispatch();
   const { favoriteList } = useSelector((state) => state.firestore);
+  console.log("favoriteList", favoriteList);
 
   useEffect(() => {
-    dispatch(getListFromFirestore("favorites"))
-      .then((action) => {
-        const favoritePayload = action.payload;
-        setFavoriteData(favoritePayload);
-      })
-      .catch((error) => {
-        console.error("Error fetching favorites:", error);
-      });
-  }, [favoriteList]);
+    dispatch(getListFromFirestore("favorites"));
+  }, []);
 
-  const mappedFavorites = favoriteData
-    ? favoriteData.map((item) => item.data)
+  const mappedFavorites = favoriteList
+    ? favoriteList.map((item) => item.data)
     : [];
 
   return <MediaListScreen mediaList={mappedFavorites} listType="favorite" />;
