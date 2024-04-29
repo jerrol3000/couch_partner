@@ -69,6 +69,11 @@ const MediaMenu = ({ onClose, item, id }) => {
             id: currentItem.entryId,
           })
         );
+        dispatch(
+          getListFromFirestore(
+            currentScreen === "Favorites" ? "favorites" : "watchlist"
+          )
+        );
       } else {
         console.log(`Item not found in the ${collectionName} list.`);
       }

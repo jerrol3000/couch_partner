@@ -20,7 +20,6 @@ export const addItemToFirestore = createAsyncThunk(
         collection(FIREBASE_DB, collectionName),
         userData
       );
-      console.log("Document written with ID: ", docRef.id);
       return { entryId: docRef.id, data: payload };
     } catch (error) {
       throw error;

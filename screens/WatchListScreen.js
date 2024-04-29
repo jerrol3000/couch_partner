@@ -6,7 +6,6 @@ import { getListFromFirestore } from "../store/reducers/slice/mediaSlice";
 const WatchListScreen = () => {
   const dispatch = useDispatch();
   const { watchList } = useSelector((state) => state.firestore);
-  console.log("watchList", watchList);
 
   useEffect(() => {
     dispatch(getListFromFirestore("watchlist"));
