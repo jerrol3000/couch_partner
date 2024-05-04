@@ -7,7 +7,7 @@ import { removefromList } from "../store/reducers/slice/mediaMenuSlice";
 const FavoriteScreen = () => {
   const dispatch = useDispatch();
   const { favoriteList } = useSelector((state) => state.firestore);
-
+  console.log("re-render");
   useEffect(() => {
     dispatch(getListFromFirestore("favorites"));
   }, []);
