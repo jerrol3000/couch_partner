@@ -1,6 +1,6 @@
 /* eslint-disable no-useless-catch */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getDoc, doc } from "firebase/firestore";
+import { getDocs, doc, collection, query, where } from "firebase/firestore";
 import { FIREBASE_AUTH, FIREBASE_DB } from "../../../firebaseConfig";
 
 // Action to fetch the current user object from Firestore
@@ -8,14 +8,11 @@ export const fetchCurrentUserFromFirestore = createAsyncThunk(
   "user/fetchCurrentUserFromFirestore",
   async () => {
     try {
-      const userDocRef = doc(
-        FIREBASE_DB,
-        "users",
-        FIREBASE_AUTH.currentUser.uid
-      );
-      const userDocSnap = await getDoc(userDocRef);
-      if (userDocSnap.exists()) {
-        return userDocSnap.data();
+      const q = query(collection(FIREBASE_DB, "users"));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        return querySnapshot.docs[0].data();
       } else {
         throw new Error("User document does not exist");
       }
