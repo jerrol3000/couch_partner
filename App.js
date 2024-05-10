@@ -12,6 +12,7 @@ import FavoritesScreen from "./screens/FavoritesScreen";
 import WatchListScreen from "./screens/WatchListScreen";
 import NavigationBar from "./screens/NavigationBar";
 import AuthScreen from "./screens/AuthScreen";
+import ProfileScreen from "./screens/ProfileScreen";
 import { setCurrentScreen } from "./store/reducers/slice/screensSlice";
 import { onAuthStateChanged } from "firebase/auth";
 import { FIREBASE_AUTH } from "./firebaseConfig";
@@ -66,6 +67,11 @@ const App = () => {
                 name="WatchList"
                 component={WatchListScreen}
                 options={{ title: "Watch List" }}
+              />
+              <Stack.Screen
+                name="Profile"
+                component={ProfileScreen}
+                options={{ title: "Your profile" }}
               />
             </>
           )}
