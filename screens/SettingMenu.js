@@ -13,7 +13,6 @@ import { Icon } from "react-native-elements";
 import { useNavigation } from "@react-navigation/native";
 import { signOut } from "firebase/auth";
 import { FIREBASE_AUTH } from "../firebaseConfig";
-import useClickOutside from "./useClickOutside";
 
 const SettingsMenu = () => {
   const dispatch = useDispatch();
@@ -26,7 +25,6 @@ const SettingsMenu = () => {
   };
 
   const handleMenuItemClick = (menuItem) => {
-    console.log(`Clicked ${menuItem}`);
     setShowMenu(false); // Close menu after clicking an item
   };
 
@@ -44,8 +42,6 @@ const SettingsMenu = () => {
   const screenHeight = Dimensions.get("window").height;
   const menuTop = -0.23 * screenHeight;
 
-  useClickOutside(menuRef, () => setShowMenu(false));
-
   return (
     <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
       <View style={styles.container}>
@@ -54,7 +50,7 @@ const SettingsMenu = () => {
         </TouchableOpacity>
 
         {showMenu && (
-          <TouchableWithoutFeedback>
+          <TouchableWithoutFeedback onPress={() => {}}>
             <View style={[styles.overlay, { top: menuTop }]}>
               <View style={styles.menu} ref={menuRef}>
                 <TouchableOpacity

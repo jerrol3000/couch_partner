@@ -7,6 +7,8 @@ import {
   FlatList,
   Image,
   TextInput,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
@@ -20,7 +22,7 @@ import styles from "../styles/generalStyle";
 import { setOpenMenuId } from "../store/reducers/slice/mediaMenuSlice";
 import AnimatedCheckMark from "./AnimatedCheckMark";
 
-const API_KEY = "f00232dfb1ce381afc3c65971e0fd1aa";
+const API_KEY = "f00232dfb1ce381afc3c65971e0fd1aa"; //add to a .env file later on
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -32,7 +34,6 @@ const HomeScreen = () => {
 
   const dispatch = useDispatch();
 
-  //move to a slice
   useEffect(() => {
     const fetchSearchResults = async () => {
       try {
@@ -83,11 +84,12 @@ const HomeScreen = () => {
     fetchPopularMedia();
   }, [searchType]);
 
-  const handleToggleMenu = (itemId) => {
-    if (openMenuId === itemId) {
+  const handleToggleMenu = (itemId) =>
+    dispatch(setOpenMenuId(openMenuId === itemId ? null : itemId));
+
+  const handleTouchOutside = () => {
+    if (openMenuId !== null) {
       dispatch(setOpenMenuId(null));
-    } else {
-      dispatch(setOpenMenuId(itemId));
     }
   };
 
@@ -121,55 +123,60 @@ const HomeScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}></View>
-      <View style={styles.searchBar}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search..."
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-        />
-        <View style={styles.tabBar}>
-          <TouchableOpacity
-            style={[styles.tabButton, searchType === "tv" && styles.activeTab]}
-            onPress={() => dispatch(setSearchType("tv"))}
-          >
-            <Text
+    <TouchableWithoutFeedback onPress={handleTouchOutside}>
+      <View style={styles.container}>
+        <View style={styles.header}></View>
+        <View style={styles.searchBar}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search..."
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+          />
+          <View style={styles.tabBar}>
+            <TouchableOpacity
               style={[
-                styles.tabButtonText,
-                searchType === "tv" && styles.activeTabText,
+                styles.tabButton,
+                searchType === "tv" && styles.activeTab,
               ]}
+              onPress={() => dispatch(setSearchType("tv"))}
             >
-              TV Shows
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.tabButton,
-              searchType === "movie" && styles.activeTab,
-            ]}
-            onPress={() => dispatch(setSearchType("movie"))}
-          >
-            <Text
+              <Text
+                style={[
+                  styles.tabButtonText,
+                  searchType === "tv" && styles.activeTabText,
+                ]}
+              >
+                TV Shows
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               style={[
-                styles.tabButtonText,
-                searchType === "movie" && styles.activeTabText,
+                styles.tabButton,
+                searchType === "movie" && styles.activeTab,
               ]}
+              onPress={() => dispatch(setSearchType("movie"))}
             >
-              Movies
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={[
+                  styles.tabButtonText,
+                  searchType === "movie" && styles.activeTabText,
+                ]}
+              >
+                Movies
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
+        <FlatList
+          data={searchQuery.trim() !== "" ? results : popular}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          renderItem={renderMediaItem}
+        />
+        {showCheckMark && <AnimatedCheckMark isVisible={showCheckMark} />}
       </View>
-      <FlatList
-        data={searchQuery.trim() !== "" ? results : popular}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        renderItem={renderMediaItem}
-      />
-      {showCheckMark && <AnimatedCheckMark isVisible={showCheckMark} />}
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
